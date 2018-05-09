@@ -34,6 +34,10 @@ along with GNU Emacs.  If not, see <https://www.gnu.org/licenses/>.  */
 #include <intprops.h>
 #include <verify.h>
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <dlfcn.h>
+
 INLINE_HEADER_BEGIN
 
 /* Define a TYPE constant ID as an externally visible name.  Use like this:
@@ -3021,6 +3025,11 @@ CHECK_NUMBER_CDR (Lisp_Object x)
   XSETCDR (x, tmp);
 }
 
+#define PRINT_LISP_FUNCTION_INFO(lname, fnname)
+    Dl_info* ___dl_addr_struct = malloc(sizeof(Dl_info));\
+    dladdr(fnname, ___dl_addr_struct);\
+    printf("Defining Lisp function %s with from C function %s\n", lname, ___dl_addr_struct->dli_sname);\
+    free(___dl_addr_struct);
 /* Define a built-in function for calling from Lisp.
  `lname' should be the name to give the function in Lisp,
     as a null-terminated C string.
@@ -3048,7 +3057,8 @@ CHECK_NUMBER_CDR (Lisp_Object x)
 
 /* This version of DEFUN declares a function prototype with the right
    arguments, so we can catch errors with maxargs at compile-time.  */
-#define DEFUN(lname, fnname, sname, minargs, maxargs, intspec, doc)	\
+#define DEFUN(lname, fnname, sname, minargs, maxargs, intspec, doc)\
+   PRINT_LISP_FUNCTION_INFO(lname, fnname); \
    static struct Lisp_Subr sname =				\
      { { PVEC_SUBR << PSEUDOVECTOR_AREA_BITS },				\
        { .a ## maxargs = fnname },					\
